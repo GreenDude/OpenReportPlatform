@@ -52,14 +52,13 @@ public class ExcelReader {
         int velocityFieldId = -1;
 
         for(Row row : kpiSheet){
-            System.out.println("Starting extraction for raw " + row.getRowNum());
-            if(listOfTeams.containsValue(-1) & !row.getCell(0).getStringCellValue().isEmpty()){
-                StreamSupport.stream(row.spliterator(), false)
-                        .filter(c->listOfTeams.containsKey(c.getStringCellValue()))
-                        .forEach(c->listOfTeams.replace(c.getStringCellValue(), c.getColumnIndex()));
+            if(listOfTeams.containsValue(-1)){
+                if(!row.getCell(0).getStringCellValue().isEmpty()) {
+                    StreamSupport.stream(row.spliterator(), false)
+                            .filter(c -> listOfTeams.containsKey(c.getStringCellValue()))
+                            .forEach(c -> listOfTeams.replace(c.getStringCellValue(), c.getColumnIndex()));
+                }
             }
-            System.out.println("Ending extraction for raw " + row.getRowNum());
-            System.out.println("=================================================================");
         }
 
         return velocity;
