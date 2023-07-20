@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Builder
+@Getter
+@Setter
 public class VelocityInput {
 
     private String sowGroup;
