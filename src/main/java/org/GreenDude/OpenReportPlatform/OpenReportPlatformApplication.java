@@ -15,12 +15,17 @@ public class OpenReportPlatformApplication {
 
 	public static void main(String[] args) {
 		ExcelReader excelReader = new ExcelReader();
-		String sowGroup = "SOW007";
+		excelReader.setSow("SOW007");
 		excelReader.setListOfTeams(Arrays.asList("Team A", "Team B", "Team C"));
 
-		excelReader.getWorkbook("/Users/mosingheorghii/Documents/", "SOW007");
+		excelReader.getWorkbook("/Users/mosingheorghii/Documents/SOW007.xlsx");
 		excelReader.extractVelocityForSprint("Sprint 1").forEach(
 				v-> System.out.println(v.getTeamName() + " : " + v.getVelocity()));
+
+		excelReader.getWorkbook("/Users/mosingheorghii/Documents/NPS Example.xlsx");
+		System.out.println(excelReader
+				.calculateNPS("Sheet1", "Team A", "Overall", "Using Complex model").toString());;
+//		System.out.println(excelReader.extractNPS("Sheet1", "Team A", "NPS").toString());;
 	}
 
 }
