@@ -1,6 +1,7 @@
 package org.GreenDude.OpenReportPlatform.Input;
 
 import lombok.Getter;
+import org.GreenDude.OpenReportPlatform.Input.Models.VelocityInput;
 import org.apache.kafka.common.protocol.types.Field;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -22,10 +23,12 @@ import java.util.stream.StreamSupport;
 public class ExcelReader {
 
     private Map<String, Integer> listOfTeams = new HashMap<>();
+    private List<VelocityInput> velocityInputs = new ArrayList<>();
     private Workbook workbook;
     String kpiTrackerTabName = "KPIs Tracker";
+    String sow;
 
-    public void setKpiTrackerTabName(String name){
+    public void setKpiTrackerTabName(String name) {
         this.kpiTrackerTabName = name;
     }
 
@@ -33,8 +36,9 @@ public class ExcelReader {
         listOfTeams.forEach(l->this.listOfTeams.put(l, -1));
     }
 
-    public Workbook getWorkbook(String path){
-        try (FileInputStream file = new FileInputStream(new File(path))) {
+    public Workbook getWorkbook(String path, String sow) {
+        this.sow = sow;
+        try (FileInputStream file = new FileInputStream(new File(path.concat(sow).concat(".xlsx")))) {
             workbook = new XSSFWorkbook(file);
 
         } catch (IOException e) {
@@ -44,24 +48,39 @@ public class ExcelReader {
         return workbook;
     }
 
-    public int extractVelocityForSprint(String sprint, String teamName){
+    public List<VelocityInput> extractVelocityForSprint(String sprint) {
         int velocity = 0;
         Sheet kpiSheet = workbook.getSheet(kpiTrackerTabName);
-        List<String> indexationHelper = new ArrayList<>();
         int sprintFieldId = 0;
-        int velocityFieldId = -1;
 
-        for(Row row : kpiSheet){
-            if(listOfTeams.containsValue(-1)){
-                if(!row.getCell(0).getStringCellValue().isEmpty()) {
-                    StreamSupport.stream(row.spliterator(), false)
-                            .filter(c -> listOfTeams.containsKey(c.getStringCellValue()))
-                            .forEach(c -> listOfTeams.replace(c.getStringCellValue(), c.getColumnIndex()));
+        try {
+            for (Row row : kpiSheet) {
+
+                //Get indexes of KPI Fields
+                if (listOfTeams.containsValue(-1)) {
+                    if (!row.getCell(sprintFieldId).getStringCellValue().isEmpty()) {
+                        StreamSupport.stream(row.spliterator(), false)
+                                .filter(c -> listOfTeams.containsKey(c.getStringCellValue()))
+                                .forEach(c -> listOfTeams.replace(c.getStringCellValue(), c.getColumnIndex()));
+                    }
+                    continue;
+                }
+
+                if (row.getCell(sprintFieldId).getStringCellValue().equalsIgnoreCase(sprint)){
+                    for(Map.Entry<String, Integer> e : listOfTeams.entrySet()){
+                        velocityInputs.add(VelocityInput.builder()
+                                .teamName(e.getKey())
+                                .sowGroup(sow)
+                                .sprint(sprint)
+                                .velocity((int) row.getCell(e.getValue()).getNumericCellValue())
+                                .build());
+                    }
+                    return velocityInputs;
                 }
             }
+        } catch (RuntimeException e){
+            throw new RuntimeException("Sprint not found in the KPI report", e);
         }
-
-        return velocity;
+        return null;
     }
-
 }
