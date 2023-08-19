@@ -25,7 +25,6 @@ public class OpenReportPlatformApplication {
 		excelReader.getWorkbook("/Users/mosingheorghii/Documents/NPS Example.xlsx");
 		System.out.println(excelReader
 				.calculateNPS("Sheet1", "Team A", "Overall", "Using Complex model").toString());;
-//		System.out.println(excelReader.extractNPS("Sheet1", "Team A", "NPS").toString());;
 	}
 
 }
