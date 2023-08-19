@@ -25,6 +25,10 @@ public class OpenReportPlatformApplication {
 		excelReader.getWorkbook("/Users/mosingheorghii/Documents/NPS Example.xlsx");
 		System.out.println(excelReader
 				.calculateNPS("Sheet1", "Team A", "Overall", "Using Complex model").toString());;
+
+		excelReader.getWorkbook("/Users/mosingheorghii/Documents/Planning Confidence.xlsx");
+		System.out.println(excelReader.extractPlanningConfidence("Team A", "Sprint 0", "Sheet1", "Planning Confidence").toString());
+
 	}
 
 }
