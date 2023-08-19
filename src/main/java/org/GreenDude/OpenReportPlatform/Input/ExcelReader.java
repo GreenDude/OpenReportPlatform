@@ -2,6 +2,7 @@ package org.GreenDude.OpenReportPlatform.Input;
 
 import lombok.Getter;
 import org.GreenDude.OpenReportPlatform.Input.Models.NetPromoterScore;
+import org.GreenDude.OpenReportPlatform.Input.Models.PlanningConfidence;
 import org.GreenDude.OpenReportPlatform.Input.Models.VelocityInput;
 import org.apache.kafka.common.protocol.types.Field;
 import org.apache.poi.ss.usermodel.*;
@@ -35,15 +36,13 @@ public class ExcelReader {
         this.sow = sow;
     }
 
-    public Workbook getWorkbook(String path) {
+    public void getWorkbook(String path) {
         try (FileInputStream file = new FileInputStream(new File(path))) {
             workbook = new XSSFWorkbook(file);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        return null;
     }
 
     public List<VelocityInput> extractVelocityForSprint(String sprint) {
@@ -74,32 +73,6 @@ public class ExcelReader {
         return null;
     }
 
-    public NetPromoterScore extractNPS(String formName, String teamName, String npsMarker) {
-        double nps = 0f;
-        boolean isComplexModel = false;
-        Sheet npsSheet = workbook.getSheet(formName);
-        for (Row row : npsSheet) {
-            for (Cell cell : row) {
-                if (cell.getCellType().equals(CellType.STRING)) {
-                    if (cell.getStringCellValue().equalsIgnoreCase(npsMarker)) {
-                        nps = row.getCell(cell.getColumnIndex() + 1).getNumericCellValue();
-                        Cell complexModelIndicatorCell = row.getCell(0);
-                        if (complexModelIndicatorCell.getCellType().equals(CellType.STRING)) {
-                            isComplexModel = (complexModelIndicatorCell.getStringCellValue().compareToIgnoreCase("Complex") == 0);
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-
-        return NetPromoterScore.builder()
-                .isComplexModel(isComplexModel)
-                .teamName(teamName)
-                .nps(nps)
-                .build();
-    }
-
     public NetPromoterScore calculateNPS(String formName, String teamName, String scoreMarker, String complexityMarker) {
         int scoreId = -1;
         int complexityId = -1;
@@ -107,8 +80,6 @@ public class ExcelReader {
         double nps = 0;
         List<Double> scores = new ArrayList<>();
         Cell scoreCell;
-        Cell complexityCell;
-        boolean complexityChecked = false;
 
         Sheet npsSheet = workbook.getSheet(formName);
         for (Row row : npsSheet) {
@@ -147,12 +118,40 @@ public class ExcelReader {
 
         } else {
             OptionalDouble averageNPS = scores.stream().mapToDouble(a -> a).average();
-            nps = (averageNPS.isPresent() ? averageNPS.getAsDouble() : 0) * 10;
+            nps = (averageNPS.isPresent() ? averageNPS.getAsDouble() : 0);
         }
         return NetPromoterScore.builder()
                 .isComplexModel(isComplex)
                 .teamName(teamName)
                 .nps(nps)
                 .build();
+    }
+
+    public PlanningConfidence extractPlanningConfidence(String teamName, String sprint, String sheetName, String scoreMarker){
+        Cell scoreCell;
+        int pcId = -1;
+        Sheet pcSheet = workbook.getSheet(sheetName);
+        List<Integer> pcScores = new ArrayList<>();
+        for (Row row : pcSheet){
+            if (pcId < 0) {
+                for (Cell cell : row) {
+                    if (cell.getCellType().equals(CellType.STRING)) {
+                        if (cell.getStringCellValue().compareToIgnoreCase(scoreMarker) == 0) {
+                            pcId = cell.getColumnIndex();
+                        }
+                    }
+                }
+            }
+            else {
+                //Extract scores
+                scoreCell = row.getCell(pcId);
+                if(scoreCell.getCellType().equals(CellType.NUMERIC) || scoreCell.getCellType().equals(CellType.FORMULA)){
+                    pcScores.add((int) scoreCell.getNumericCellValue());
+                }
+            }
+        }
+
+        OptionalDouble averageConfidence = pcScores.stream().mapToDouble(a -> a).average();
+        return new PlanningConfidence(teamName, sprint, averageConfidence.isPresent() ? averageConfidence.getAsDouble() : 0);
     }
 }
