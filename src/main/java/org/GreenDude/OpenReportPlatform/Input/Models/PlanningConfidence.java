@@ -1,6 +1,7 @@
 package org.GreenDude.OpenReportPlatform.Input.Models;
 
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @AllArgsConstructor

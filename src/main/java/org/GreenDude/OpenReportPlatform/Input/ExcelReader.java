@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.GreenDude.OpenReportPlatform.Input.Models.NetPromoterScore;
 import org.GreenDude.OpenReportPlatform.Input.Models.PlanningConfidence;
 import org.GreenDude.OpenReportPlatform.Input.Models.VelocityInput;
+import org.GreenDude.OpenReportPlatform.Utils.ReflectionUtils;
 import org.apache.kafka.common.protocol.types.Field;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -23,6 +24,8 @@ public class ExcelReader {
     private Workbook workbook;
     String kpiTrackerTabName = "KPIs Tracker";
     String sow;
+
+    ReflectionUtils reflectionUtils = new ReflectionUtils();
 
     public void setKpiTrackerTabName(String name) {
         this.kpiTrackerTabName = name;
@@ -153,5 +156,11 @@ public class ExcelReader {
 
         OptionalDouble averageConfidence = pcScores.stream().mapToDouble(a -> a).average();
         return new PlanningConfidence(teamName, sprint, averageConfidence.isPresent() ? averageConfidence.getAsDouble() : 0);
+    }
+
+    public Object genericDataExtractor(String modelName, Map<String, String> fieldsToBeExtracted){
+        reflectionUtils.getObjectPackage(this);
+
+        return null;
     }
 }

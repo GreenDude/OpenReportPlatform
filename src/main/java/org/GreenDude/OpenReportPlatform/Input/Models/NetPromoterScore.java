@@ -1,10 +1,13 @@
 package org.GreenDude.OpenReportPlatform.Input.Models;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
-
-@Builder
 @ToString
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class NetPromoterScore {
 
     private String teamName;

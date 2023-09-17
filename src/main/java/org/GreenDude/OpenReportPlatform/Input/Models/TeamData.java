@@ -1,8 +1,10 @@
 package org.GreenDude.OpenReportPlatform.Input.Models;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 
-@Builder
+@AllArgsConstructor
 public class TeamData {
 
     private final String defaultString = "NULL";
